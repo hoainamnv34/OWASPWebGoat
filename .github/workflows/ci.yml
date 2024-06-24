@@ -71,164 +71,163 @@ jobs:
           report: 'report.json'  # Path của file report
         
 
-  # # Software Composition Analysis     
-  # SCA:
-  #   name: SCA
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Get code
-  #       uses: actions/checkout@v4
-  #     - name: SCA Scanning
-  #       uses: hoainamnv34/dependency-check@main
-  #       with:
-  #         project: ${{env.DOJO_PRODUCT}} # Tên project, được lấy từ biến môi trường 'DOJO_PRODUCT'
-  #         path: '.' # Đường dẫn tới thư mục cần quét
-  #         format: 'XML'    # Định dạng của báo cáo kết quả quét là 'XML' 
-  #     - name: Upload Test results
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: SCA-report
-  #         path: ./reports
+  # Software Composition Analysis     
+  SCA:
+    name: SCA
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+      - name: SCA Scanning
+        uses: hoainamnv34/dependency-check@main
+        with:
+          project: ${{env.DOJO_PRODUCT}} # Tên project, được lấy từ biến môi trường 'DOJO_PRODUCT'
+          path: '.' # Đường dẫn tới thư mục cần quét
+          format: 'XML'    # Định dạng của báo cáo kết quả quét là 'XML' 
+      - name: Upload Test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: SCA-report
+          path: ./reports
   
-  # # Upload Software Composition Analysis Results lên DefectDojo (tương tự Upload Secret Scanning)
-  # import-SCA:
-  #   needs: SCA
-  #   name: Upload results
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Download artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: SCA-report
-  #         path: .
-  #     - name: import to DefectDojo
-  #       uses: hoainamnv34/import-to-DefectDojo@main
-  #       with:
-  #         host: '${{env.DEFECTDOJO_URL}}'
-  #         product: ${{env.DOJO_PRODUCT}}
-  #         engagement: ${{env.DOJO_ENGAGEMENT}}
-  #         scan: 'Dependency Check Scan'
-  #         report: 'dependency-check-report.xml'
-  #         token:  ${{ env.DEFECT_DOJO_API_TOKEN }}
-  #         active: "True"
-  #         verified: "True"
-  #         test_title: "Software Composition Analysis"
-  #         close_old_findings: "True"
-  #         close_old_findings_product_scope: "True"
-  #         branch_tag: "${{ github.event.base_ref }}"
-  #         commit_hash: "${{ github.sha }}"
-
-  # # Static Application Security Testing     
-  # SAST: 
-  #   name: SAST
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Get code
-  #       uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
+  # Upload Software Composition Analysis Results lên DefectDojo (tương tự Upload Secret Scanning)
+  import-SCA:
+    needs: SCA
+    name: Upload results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: SCA-report
+          path: .
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: import to CVM
+        uses: hoainamnv34/Import-to-CVM@main
+        with:
+          host: '${{env.CVM_URL}}' 
+          project_id: ${{env.CVM_PROJECT_ID}} 
+          pipeline_run_id: ${{github.run_id}}
+          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          commit_hash: "${{ github.sha }}"
+          branch_name: ${{ steps.extract_branch.outputs.branch }}
+          tool_type: "DependencyCheck"
+          test_title: "Software Composition Analysis"  # Tiêu đề của bài kiểm thử
+          report: 'dependency-check-report.xml'  # Path của file report
+  
+  # Static Application Security Testing     
+  SAST: 
+    name: SAST
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
-  #     # Dùng sonar-scanner-cli để yêu cầu tới SonarQube Server
-  #     # -e SONAR_HOST_URL: URL của SonarQube Server, được lấy từ biến `vars.SONAR_HOST_URL`
-  #     # -e SONAR_SCANNER_OPTS: Tùy chọn cho SonarScanner, bao gồm projectKey, loại trừ các tệp `.java`, và thiết lập bộ nhớ tối đa
-  #     # -e SONAR_TOKEN: Token xác thực với SonarQube Server, được lấy từ secret `SONAR_TOKEN`
-  #     # -v "./:/usr/src" Đường dẫn tới thư mục gốc của mã nguồn để quét
-  #     - name: SonarQube
-  #       run: |
-  #         docker run \
-  #         --rm \
-  #         -e SONAR_HOST_URL="${{env.SONAR_HOST_URL}}" \
-  #         -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=${{env.SONAR_PROJECT}} -Dsonar.exclusions=**/*.java -Xmx512m" \
-  #         -e SONAR_TOKEN="${{env.SONAR_TOKEN}}" \
-  #         -v "./:/usr/src" \
-  #         sonarsource/sonar-scanner-cli
+      # Dùng sonar-scanner-cli để yêu cầu tới SonarQube Server
+      # -e SONAR_HOST_URL: URL của SonarQube Server, được lấy từ biến `vars.SONAR_HOST_URL`
+      # -e SONAR_SCANNER_OPTS: Tùy chọn cho SonarScanner, bao gồm projectKey, loại trừ các tệp `.java`, và thiết lập bộ nhớ tối đa
+      # -e SONAR_TOKEN: Token xác thực với SonarQube Server, được lấy từ secret `SONAR_TOKEN`
+      # -v "./:/usr/src" Đường dẫn tới thư mục gốc của mã nguồn để quét
+      - name: SonarQube
+        run: |
+          docker run \
+          --rm \
+          -e SONAR_HOST_URL="${{env.SONAR_HOST_URL}}" \
+          -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=${{env.SONAR_PROJECT}} -Dsonar.exclusions=**/*.java -Xmx512m" \
+          -e SONAR_TOKEN="${{env.SONAR_TOKEN}}" \
+          -v "./:/usr/src" \
+          sonarsource/sonar-scanner-cli
 
 
-  # # Upload Static Application Security Testing Results lên DefectDojo (tương tự Upload Secret Scanning)
-  # import-SAST:
-  #   needs: SAST
-  #   name: Upload Results
-  #   runs-on: ubuntu-latest
-  #   permissions: read-all
-  #   steps:
-  #     - name: ls
-  #       run: ls
-  #     - name: import to DefectDojo
-  #       uses: hoainamnv34/import-to-DefectDojo@main
-  #       with:
-  #         host: '${{env.DEFECTDOJO_URL}}'  
-  #         product: ${{env.DOJO_PRODUCT}}
-  #         engagement: ${{env.DOJO_ENGAGEMENT}}
-  #         scan: 'SonarQube API Import'
-  #         token:  ${{ env.DEFECT_DOJO_API_TOKEN }}
-  #         active: "True"
-  #         verified: "True"
-  #         test_title: "Static Application Security Testing"
-  #         close_old_findings: "True"
-  #         close_old_findings_product_scope: "True"
-  #         branch_tag: "${{ github.event.base_ref }}"
-  #         commit_hash: "${{ github.sha }}"
+  # Upload Static Application Security Testing Results lên DefectDojo (tương tự Upload Secret Scanning)
+  import-SAST:
+    needs: SAST
+    name: Upload Results
+    runs-on: ubuntu-latest
+    permissions: read-all
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: import to CVM
+        uses: hoainamnv34/Import-to-CVM@main
+        with:
+          host: '${{env.CVM_URL}}' 
+          project_id: ${{env.CVM_PROJECT_ID}} 
+          pipeline_run_id: ${{github.run_id}}
+          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          commit_hash: "${{ github.sha }}"
+          branch_name: ${{ steps.extract_branch.outputs.branch }}
+          tool_type: "SonarQube"
+          test_title: "Static Application Security Testing"  # Tiêu đề của bài kiểm thử
+          service_key: '${{env.SONAR_PROJECT}}'
           
-  # unit-test: 
-  #   name: Unit test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Unit test
-  #       run: echo "unit test"
+  unit-test: 
+    name: Unit test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unit test
+        run: echo "unit test"
 
-  # # Dockerfile Scanning 
-  # dockerfile-scanning:
-  #   name: Dockerfile Scanning
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Set up Python 3.8
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: 3.8
-  #     - name: Test with Checkov
-  #       id: checkov
-  #       uses: bridgecrewio/checkov-action@master  # Sử dụng "checkov-action" từ Bridgecrew để quét Dockerfile
-  #       with:
-  #         directory: . # Đường dẫn tới thư mục gốc của mã nguồn để quét
-  #         framework: dockerfile  # Thiết lập framework quét là "dockerfile"
-  #         soft_fail: true # Cho phép tiếp tục ngay cả khi quá trình quét phát hiện lỗi
-  #         output_format: json  # Định dạng đầu ra của kết quả quét là JSON
-  #         output_file_path: ./results  # Đường dẫn lưu kết quả quét
-  #     - name: Upload artifacts
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: checkov-report
-  #         path: ./results
+  # Dockerfile Scanning 
+  dockerfile-scanning:
+    name: Dockerfile Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+      - name: Test with Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@master  # Sử dụng "checkov-action" từ Bridgecrew để quét Dockerfile
+        with:
+          directory: . # Đường dẫn tới thư mục gốc của mã nguồn để quét
+          framework: dockerfile  # Thiết lập framework quét là "dockerfile"
+          soft_fail: true # Cho phép tiếp tục ngay cả khi quá trình quét phát hiện lỗi
+          output_format: json  # Định dạng đầu ra của kết quả quét là JSON
+          output_file_path: ./results  # Đường dẫn lưu kết quả quét
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkov-report
+          path: ./results
 
-  # # Upload Dockerfile Scanning Results lên DefectDojo (tương tự Upload Secret Scanning)
-  # import-dockerfile-scanning:
-  #   needs: dockerfile-scanning
-  #   name: Upload Results
-  #   runs-on: ubuntu-latest
-  #   permissions: read-all
-  #   steps:
-  #     - name: Download artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: checkov-report
-  #         path: .
-  #     - name: import to DefectDojo
-  #       uses: hoainamnv34/import-to-DefectDojo@main
-  #       with:
-  #         host: '${{env.DEFECTDOJO_URL}}'
-  #         product: ${{env.DOJO_PRODUCT}}
-  #         engagement: ${{env.DOJO_ENGAGEMENT}}
-  #         scan: 'Checkov Scan'
-  #         report: 'results_json.json'
-  #         token:  ${{ env.DEFECT_DOJO_API_TOKEN }}
-  #         active: "True"
-  #         verified: "True"
-  #         test_title: "Dockerfile Scanning"
-  #         close_old_findings: "True"
-  #         close_old_findings_product_scope: "True"
-  #         branch_tag: "${{ github.event.base_ref }}"
-  #         commit_hash: "${{ github.sha }}"
+  # Upload Dockerfile Scanning Results lên DefectDojo (tương tự Upload Secret Scanning)
+  import-dockerfile-scanning:
+    needs: dockerfile-scanning
+    name: Upload Results
+    runs-on: ubuntu-latest
+    permissions: read-all
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: checkov-report
+          path: .
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: import to CVM
+        uses: hoainamnv34/Import-to-CVM@main
+        with:
+          host: '${{env.CVM_URL}}' 
+          project_id: ${{env.CVM_PROJECT_ID}} 
+          pipeline_run_id: ${{github.run_id}}
+          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          commit_hash: "${{ github.sha }}"
+          branch_name: ${{ steps.extract_branch.outputs.branch }}
+          tool_type: "Checkov"
+          test_title: "Dockerfile Scanning"  # Tiêu đề của bài kiểm thử
+          report: 'results_json.json'  # Path của file report
 
   # # Job đánh giá luồng sau khi Secret Scanning, SCA, SAST, Dockerfile Scan đã được thực hiện và upload kết quả lên DefectDojo
   # evaluate-1:
