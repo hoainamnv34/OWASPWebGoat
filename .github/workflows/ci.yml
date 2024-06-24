@@ -9,7 +9,7 @@ on:
 #   SONAR_PROJECT: projectKey của project trong SonarQube
 #   SONAR_TOKEN: Token xác thực với SonarQube Server, được lấy từ secret `SONAR_TOKEN`
 env:
-  CVM_URL: 'http://171.241.45.30'
+  CVM_URL: 'http://171.241.45.30:3001'
   CVM_PROJECT_ID: '' 
   SONAR_HOST_URL: 'https://sonarqube.vbeecore.com'
   SONAR_PROJECT: 'esupport-backend'
@@ -57,7 +57,7 @@ jobs:
         shell: bash
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
-      - name: import to DefectDojo
+      - name: import to CVM
         uses: hoainamnv34/Import-to-CVM@main
         with:
           host: '${{env.CVM_URL}}' 
