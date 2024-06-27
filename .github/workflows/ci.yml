@@ -12,7 +12,7 @@ env:
   CVM_URL: 'http://171.241.45.30:3001'
   CVM_PROJECT_ID: '3' 
   SONAR_HOST_URL: 'https://sonarqube.vbeecore.com'
-  SONAR_PROJECT: 'esupport-backend'
+  SONAR_PROJECT: 'WebGoat-App'
   SONAR_TOKEN: 'sqa_b4f429a78412d3a597e44dc5676e306816bca5e9'
 
 jobs:
@@ -70,7 +70,6 @@ jobs:
           test_title: "Secret Scanning"  # Tiêu đề của bài kiểm thử
           report: 'report.json'  # Path của file report
         
-
   # Software Composition Analysis     
   SCA:
     name: SCA
@@ -142,7 +141,6 @@ jobs:
           -e SONAR_TOKEN="${{env.SONAR_TOKEN}}" \
           -v "./:/usr/src" \
           sonarsource/sonar-scanner-cli
-
 
   # Upload Static Application Security Testing Results lên DefectDojo (tương tự Upload Secret Scanning)
   import-SAST:

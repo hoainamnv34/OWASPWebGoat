@@ -1,0 +1,125 @@
+name: CD
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  CVM_URL: 'http://171.241.45.30:3001'
+  CVM_PROJECT_ID: '3' 
+  TARGET: http://172.17.0.1:8081
+  HEALTH_CHECK: 172.17.0.1:8081
+  ENDPOINT: "/WebGoat"
+  TIMEOUT: 60 
+  ZAP_HTTP: 'http://172.17.0.1:8083'
+jobs:
+
+  wait-for-it:
+    name: Wait for a service to be ready
+    runs-on: self-hosted
+    steps:
+      - name: run Wait-for-It
+        uses: hoainamnv34/Wait-for-It@main
+        with:
+          host: '${{env.HEALTH_CHECK}}' 
+          timeout: '${{env.TIMEOUT}}' 
+
+  WAST:
+    name: Web Application Security Testing
+    runs-on: self-hosted
+    needs: wait-for-it
+    steps:
+      - name: run pentest
+        uses: hoainamnv34/pentest@main
+        with:
+          target: '${{env.TARGET}}' 
+          endpoint: '${{env.ENDPOINT}}' 
+          zap_http: ${{env.ZAP_HTTP}}
+          zap_https: ${{env.ZAP_HTTP}}
+      - name: Upload Test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: wast-report
+          path: ./report.xml
+      - name: remove report
+        run: rm ./report.xml
+          
+  import-WAST:
+    needs: WAST
+    name: Import WAST
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wast-report
+          path: .
+      - name: import to CVM
+        uses: hoainamnv34/Import-to-CVM@main
+        with:
+          host: '${{env.CVM_URL}}' 
+          project_id: ${{env.CVM_PROJECT_ID}} 
+          pipeline_run_id: ${{github.run_id}}
+          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          commit_hash: "${{ github.sha }}"
+          branch_name: ${{ steps.extract_branch.outputs.branch }}
+          tool_type: "ZAP"
+          test_title: "Web Application Security Testing"  # Tiêu đề của bài kiểm thử
+          report: 'report.xml'  # Path của file report   
+  
+  SAS:
+    name: Security API Scanning
+    runs-on: self-hosted
+    needs: wait-for-it
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+      - name: run jmeter
+        uses: hoainamnv34/jmeter@main
+        with:
+          target: '${{env.TARGET}}'  
+          zap-host: ${{env.ZAP_HTTP}}
+          test-file: .github/HTTP_Request.jmx
+      - name: Upload Test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: sas-report
+          path: report.xml
+      - name: remove report
+        run: rm ./report.xml
+          
+  import-SAS:
+    needs: SAS
+    name: Import SAS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sas-report
+          path: .
+
+      - name: import to CVM
+        uses: hoainamnv34/Import-to-CVM@main
+        with:
+          host: '${{env.CVM_URL}}' 
+          project_id: ${{env.CVM_PROJECT_ID}} 
+          pipeline_run_id: ${{github.run_id}}
+          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          commit_hash: "${{ github.sha }}"
+          branch_name: ${{ steps.extract_branch.outputs.branch }}
+          tool_type: "ZAP"
+          test_title: "Security API Scanning"  # Tiêu đề của bài kiểm thử
+          report: 'report.xml'  # Path của file report   
+          
+  evaluate:
+    needs: [import-SAS, import-WAST] # Job này phụ thuộc vào các job khác gồm "import-secret-Scanning", "import-SCA", "import-SAST" và "import-dockerfile-scanning". Job này chỉ chạy sau khi các job kia hoàn thành.
+    name: Evaluate Pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - name: import to DefectDojo
+        uses: hoainamnv34/evaluate-pipeline@main
+        with:
+          host: '${{env.CVM_URL}}'
+          project_id: ${{env.CVM_PROJECT_ID}}  
+          pipeline_run_id: ${{github.run_id}}
+          latest_request: true 
