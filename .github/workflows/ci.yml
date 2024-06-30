@@ -9,7 +9,7 @@ on:
 #   SONAR_TOKEN: Token xác thực với SonarQube Server, được lấy từ secret `SONAR_TOKEN`
 env:
   CVM_URL: 'http://171.241.45.30:3001'
-  CVM_PROJECT_ID: '3' 
+  CVM_PROJECT_ID: '1' 
   SONAR_HOST_URL: 'https://sonarqube.vbeecore.com'
   SONAR_PROJECT: 'WebGoat-App'
   SONAR_TOKEN: 'sqa_b4f429a78412d3a597e44dc5676e306816bca5e9'
