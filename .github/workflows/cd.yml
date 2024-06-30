@@ -4,7 +4,7 @@ on:
 
 env:
   CVM_URL: 'http://171.241.45.30:3001'
-  CVM_PROJECT_ID: '3' 
+  CVM_PROJECT_ID: '1' 
   TARGET: http://172.17.0.1:8081
   HEALTH_CHECK: 172.17.0.1:8081
   ENDPOINT: "/WebGoat"
