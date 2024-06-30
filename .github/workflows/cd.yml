@@ -61,7 +61,7 @@ jobs:
           pipeline_run_url: 'actions/runs/${{ github.run_id }}'
           commit_hash: "${{ github.sha }}"
           branch_name: ${{ steps.extract_branch.outputs.branch }}
-          tool_type: "ZAP"
+          tool_type: "Zap"
           test_title: "Web Application Security Testing"  # Tiêu đề của bài kiểm thử
           report: 'report.xml'  # Path của file report   
   
@@ -106,7 +106,7 @@ jobs:
           pipeline_run_url: 'actions/runs/${{ github.run_id }}'
           commit_hash: "${{ github.sha }}"
           branch_name: ${{ steps.extract_branch.outputs.branch }}
-          tool_type: "ZAP"
+          tool_type: "Zap"
           test_title: "Security API Scanning"  # Tiêu đề của bài kiểm thử
           report: 'report.xml'  # Path của file report   
           
