@@ -13,7 +13,7 @@ env:
   SONAR_HOST_URL: 'https://sonarqube.vbeecore.com'
   SONAR_PROJECT: 'WebGoat-App'
   SONAR_TOKEN: 'sqa_b4f429a78412d3a597e44dc5676e306816bca5e9'
-
+  SONAR_API_KEY: 'squ_1282bb51cee8066cd8ba140d15c10029e0c9d56f'
 jobs:
   # Secret Scanning
   secret-scanning: 
@@ -164,7 +164,7 @@ jobs:
           tool_type: "SonarQube"
           test_title: "Static Application Security Testing" 
           server_url: "https://sonarqube.vbeecore.com/api"
-          api_key: "${{env.SONAR_TOKEN}}"
+          api_key: "${{env.SONAR_API_KEY}}"
           service_key: '${{env.SONAR_PROJECT}}'
           
   unit-test: 
