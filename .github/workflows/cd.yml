@@ -57,8 +57,8 @@ jobs:
         with:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}} 
-          pipeline_run_id: ${{github.run_id}}
-          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          run_id: ${{github.run_id}}
+          run_url: 'actions/runs/${{ github.run_id }}'
           commit_hash: "${{ github.sha }}"
           branch_name: ${{ steps.extract_branch.outputs.branch }}
           tool_type: "Zap"
@@ -102,8 +102,8 @@ jobs:
         with:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}} 
-          pipeline_run_id: ${{github.run_id}}
-          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          run_id: ${{github.run_id}}
+          run_url: 'actions/runs/${{ github.run_id }}'
           commit_hash: "${{ github.sha }}"
           branch_name: ${{ steps.extract_branch.outputs.branch }}
           tool_type: "Zap"
@@ -120,5 +120,5 @@ jobs:
         with:
           host: '${{env.CVM_URL}}'
           project_id: ${{env.CVM_PROJECT_ID}}  
-          pipeline_run_id: ${{github.run_id}}
+          run_id: ${{github.run_id}}
           latest_request: true 

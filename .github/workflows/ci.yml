@@ -61,8 +61,8 @@ jobs:
         with:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}} 
-          pipeline_run_id: ${{github.run_id}}
-          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          run_id: ${{github.run_id}}
+          run_url: 'actions/runs/${{ github.run_id }}'
           commit_hash: "${{ github.sha }}"
           branch_name: ${{ steps.extract_branch.outputs.branch }}
           tool_type: "Gitleaks"
@@ -108,8 +108,8 @@ jobs:
         with:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}} 
-          pipeline_run_id: ${{github.run_id}}
-          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          run_id: ${{github.run_id}}
+          run_url: 'actions/runs/${{ github.run_id }}'
           commit_hash: "${{ github.sha }}"
           branch_name: ${{ steps.extract_branch.outputs.branch }}
           tool_type: "DependencyCheck"
@@ -157,12 +157,14 @@ jobs:
         with:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}} 
-          pipeline_run_id: ${{github.run_id}}
-          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          run_id: ${{github.run_id}}
+          run_url: 'actions/runs/${{ github.run_id }}'
           commit_hash: "${{ github.sha }}"
           branch_name: ${{ steps.extract_branch.outputs.branch }}
           tool_type: "SonarQube"
-          test_title: "Static Application Security Testing"  # Tiêu đề của bài kiểm thử
+          test_title: "Static Application Security Testing" 
+          server_url: "https://sonarqube.vbeecore.com/api"
+          api_key: "${{env.SONAR_TOKEN}}"
           service_key: '${{env.SONAR_PROJECT}}'
           
   unit-test: 
@@ -218,8 +220,8 @@ jobs:
         with:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}} 
-          pipeline_run_id: ${{github.run_id}}
-          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          run_id: ${{github.run_id}}
+          run_url: 'actions/runs/${{ github.run_id }}'
           commit_hash: "${{ github.sha }}"
           branch_name: ${{ steps.extract_branch.outputs.branch }}
           tool_type: "Checkov"
@@ -237,7 +239,7 @@ jobs:
         with:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}}  
-          pipeline_run_id: ${{github.run_id}}
+          run_id: ${{github.run_id}}
           latest_request: false
 
   #Build Docker Image
@@ -335,8 +337,8 @@ jobs:
         with:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}} 
-          pipeline_run_id: ${{github.run_id}}
-          pipeline_run_url: 'actions/runs/${{ github.run_id }}'
+          run_id: ${{github.run_id}}
+          run_url: 'actions/runs/${{ github.run_id }}'
           commit_hash: "${{ github.sha }}"
           branch_name: ${{ steps.extract_branch.outputs.branch }}
           tool_type: "Trivy"
@@ -354,7 +356,7 @@ jobs:
         with:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}}  
-          pipeline_run_id: ${{github.run_id}}
+          run_id: ${{github.run_id}}
           latest_request: true
 
   push-image-to-registry:
