@@ -121,4 +121,4 @@ jobs:
           host: '${{env.CVM_URL}}'
           project_id: ${{env.CVM_PROJECT_ID}}  
           run_id: ${{github.run_id}}
-          latest_request: true 
+          final_request: true 

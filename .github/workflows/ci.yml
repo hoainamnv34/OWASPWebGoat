@@ -240,7 +240,7 @@ jobs:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}}  
           run_id: ${{github.run_id}}
-          latest_request: false
+          final_request: false
 
   #Build Docker Image
   build:
@@ -357,7 +357,7 @@ jobs:
           host: '${{env.CVM_URL}}' 
           project_id: ${{env.CVM_PROJECT_ID}}  
           run_id: ${{github.run_id}}
-          latest_request: true
+          final_request: true
 
   push-image-to-registry:
     needs: evaluate-2
