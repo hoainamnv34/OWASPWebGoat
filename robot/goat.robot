@@ -113,7 +113,7 @@ Check_JWT_Page
   Go To  ${ENDPOINT_WOLF}/jwt
   Click Element  token
   Wait Until Element Is Enabled  token  5s
-  
+  Input Text     token  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
   Click Element  secretKey
   Input Text     secretKey  none
   Sleep  2s  # Pause before reading the result
