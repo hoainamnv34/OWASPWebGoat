@@ -27,7 +27,7 @@ class JWTTokenTest {
 
     assertThat(token.getEncoded())
         .isEqualTo(
-            );
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoidGVzdCJ9.axNp9BkswwK_YRF2URJ5P1UejQNYZbK4qYcMnkusg6I");
   }
 
   @Test
