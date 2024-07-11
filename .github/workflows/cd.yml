@@ -1,7 +1,7 @@
 name: CD
 on:
   workflow_dispatch:
-
+  # push:
 env:
   CVM_URL: 'http://171.241.45.30:3001'
   CVM_PROJECT_ID: '5' 

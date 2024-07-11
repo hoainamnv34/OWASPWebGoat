@@ -1,6 +1,7 @@
 name: Continuous Integration
 on:
   workflow_dispatch:
+  push:
 # Các biến môi trường:
 #   CVM_URL: Địa chỉ URL của DefectDojo
 #   CVM_PROJECT_ID: 
